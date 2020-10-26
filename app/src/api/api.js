@@ -15,6 +15,7 @@ async function call(peticion, datos, method) {
     method,
     body: JSON.stringify(datos),
     headers: {
+      "Content-Type": "application/json",
       Authorization: await getToken(),
     },
   });

@@ -32,12 +32,9 @@ Route::patch('empresa/{id}', 'empresaController@cambiarEstado')->middleware('tok
 
 
 // CRUD DE CATEGORIA
-Route::get('categorias', 'categoriaController@inicio')->middleware('token');
-Route::get('categoriaMostrar', 'categoriaController@mostrarCategoria')->middleware('token');
-Route::get('tablaCategoria', 'categoriaController@tablaCategoria')->middleware('token');
-Route::get('categorias/{id}', 'categoriaController@mostrar')->middleware('token');
-Route::post('categorias', 'categoriaController@registrar')->middleware('token');
-Route::post('categorias/{id}', 'categoriaController@actualizar')->middleware('token');
-Route::delete('categoria/{id}', 'categoriaController@eliminar')->middleware('token');
-Route::patch('categoria/{id}', 'categoriaController@cambiarEstado')->middleware('token');
+Route::get('categorias', 'CategoriaController@listar')->middleware('token');
+Route::get('categorias/{id}', 'CategoriaController@leer')->middleware('token');
+Route::post('categorias', 'CategoriaController@registrar')->middleware('token');
+Route::put('categorias/{id}', 'CategoriaController@actualizar')->middleware('token');
+Route::patch('categoria/{id}', 'CategoriaController@cambiarVigencia')->middleware('token');
 // *********************************************************

@@ -1,33 +1,25 @@
 <template>
-  <v-content>
-    <v-row align="center" class="pa-5 align-center">
-      <v-col cols="4">
-        <v-alert
-          v-model="alert"
-          text
-          prominent
-          type="error"
-          icon="mdi-cloud-alert"
-          close-text="Close Alert"
-          dismissible
-        >Ocurrio un error.</v-alert>
-      </v-col>
-    </v-row>
+ <v-container style="padding: 0px ">
     <v-row class="pa-5 align-center">
       <v-col>
-        <v-btn fab large dark color="blue darken-3" @click="dialogEjemplo = true">
+        <v-btn
+          fab
+          large
+          dark
+          color="blue"
+          @click="dialogEjemplo = true"
+        >
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </v-col>
       <v-col cols="11">
-        <h2 class="font-weight-regular text-center">Mantenimiento de Categoria</h2>
+        <h2 class="font-weight-bold text-center">Mantenimiento de Categoria</h2>
       </v-col>
     </v-row>
     <v-dialog v-model="dialogEjemplo" persistent scrollable max-width="60vw">
       <v-card>
         <v-card-title class="headline indigo darken-4">
           <span v-if="edit" class="headline" style="color:white;">Editar Categoria</span>
-          <span v-else-if="ver" class="headline" style="color:white;">Ver Categoria</span>
           <span v-else class="headline" style="color:white;">Nueva Categoria</span>
         </v-card-title>
         <v-card-text>
@@ -35,37 +27,36 @@
             <v-row>
               <v-col cols="6">
                 <v-text-field
-                  :disabled="ver"
                   v-model="Nombre"
-                  :rules="[fieldRules.required]"
-                  label="Nombre"
+
+                  label="Nombre *"
                   prepend-icon="mdi-domain"
                   required
                 ></v-text-field>
               </v-col>
                <v-col cols="6">
                 <v-text-field
-                  :disabled="ver"
                   v-model="Descripcion"
-                  :rules="[fieldRules.required]"
-                  label="Descripcion"
+
+                  label="Descripcion *"
                   prepend-icon="mdi-domain"
                   required
                 ></v-text-field>
               </v-col>
             </v-row>
           </v-form>
+          <span class="red--text">(*) Campos Obligatorios</span>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            v-if="!ver"
             color="indigo darken-4"
             text
             @click="(dialogEjemplo = false), limpiar()"
-          >Cerrar</v-btn>
-          <v-btn
-            v-if="!ver"
+            >Cancelar
+          </v-btn>
+            <v-btn
+            
             :loading="saveLoading"
             :disabled="saveLoading"
             color="indigo darken-4"
@@ -73,33 +64,14 @@
             depressed
             @mousedown="validate"
             @click="executeEventClick"
-          >Guardar</v-btn>
-          <v-btn
-            v-if="ver"
-            color="indigo darken-4"
-            text
-            @click="(dialogEjemplo = false), limpiar()"
-          >Cerrar</v-btn>
+            >Guardar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-tabs>
-      <v-tab>Tabla 1</v-tab>
-      <v-tab>Tabla 2</v-tab>
-      <v-tab-item>
-        <tables-mostrar
-          :headers="headers"
-          :options="options"
-          :withOptions="true"
-          ref="categoriaTable"
-          entity="categorias"
-        />
-      </v-tab-item>
-      <v-tab-item>
-        <v-row class="justify-center">
-          <v-col cols="11">
-            <v-card>
-              <v-card-title>
+
+    <v-card>
+        <v-row >
+            <v-card-title>
                 <v-spacer></v-spacer>
                 <v-text-field
                   v-model="search"
@@ -107,44 +79,72 @@
                   label="Buscar"
                   single-line
                   hide-details
+
                 ></v-text-field>
-              </v-card-title>
-              <v-data-table :headers="headers2" :items="categorias" :search="search">
-                <template v-slot:[`item.Vigencia`]="{ item }">
-                  <v-chip :color="item.Vigencia? 'green': 'red'" dark></v-chip>
-                </template>
-                <template v-slot:[`item.actions`]="{ item }">
-                  <v-icon class="mr-2" @click="verCategoria(item)">mdi-eye</v-icon>
-                  <v-icon
-                    class="mr-2"
-                    @click="cambiarEstadoCategoria(item)"
-                  >{{ item.Vigencia? 'mdi-do-not-disturb': 'mdi-check-box-outline' }}</v-icon>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
+            </v-card-title>
+            <v-col cols="12" class="pt-0">
+                <v-data-table
+                    :loading="tableLoading"
+                    :headers="headers"
+                    :items="categorias"
+                    :search="search">
+                    <template v-slot:[`item`]="{ item }">
+                        <tr v-bind:class="item.Vigencia?'activo':'desactivo'">
+                        <td>{{ categorias.indexOf(item) + 1 }}</td>
+                        <td>{{ item.Nombre }}</td>
+                        <td>{{ item.Descripcion }}</td>
+                        <td>
+                            <v-tooltip bottom> 
+                                <template v-slot:activator="{ on, attrs }">    
+                                    <v-icon  class="mr-2" 
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    color="blue-grey"
+                                    @click="showEditCategoria(item)">mdi-border-color</v-icon>
+                                    </template >
+                                <span>Editar</span>
+                            </v-tooltip>
+
+                            <v-tooltip bottom> 
+                                <template v-slot:activator="{ on, attrs }">
+                                <v-icon 
+                                v-bind="attrs"
+                                    v-on="on"
+                                 class="mr-2" 
+                                 :color="item.Vigencia ? 'red lighten-1' : 'green'"  @click="cambiarEstadoCategoria(item)">
+                                {{item.Vigencia? "mdi-close-circle-outline": "mdi-checkbox-marked-circle-outline"}}
+                                </v-icon>
+                            </template >
+                        <span>{{ item.Vigencia ? "Dar de baja" : "Dar de alta" }}</span>
+                            </v-tooltip>
+                            
+                        </td>
+                        </tr>
+                    </template>
+                </v-data-table>
+            </v-col>
         </v-row>
-      </v-tab-item>
-    </v-tabs>
-  </v-content>
+    </v-card>
+ </v-container>
 </template>
 
 <script>
-import { del, get, enviarConArchivos, patch } from "../api/api";
+import { get, post, put, patch } from "../api/api";
 // import { logos } from "../api/config";
-
+import Swal from "sweetalert2";
 export default {
   components: {
-    TablesMostrar: () => import("../components/TablesMostrar"),
+    //TablesMostrar: () => import("../components/TablesMostrar"),
   },
   data() {
     return {
       edit: false,
-      ver: false,
+      //ver: false,
       alert: false,
       valid: true,
       saveLoading: false,
       dialogEjemplo: false,
+      tableLoading: true,
       fieldRules: {
         required: (v) => !!v || "Campo requerido",
         //email: (v) => {
@@ -154,58 +154,40 @@ export default {
         validateCodigoCategoria: (v) => v.length == 6 || "Codigo incorrecto.",
       },
       headers: [
-        { text: "N°", value: "Codigo", width: "10%" },
-        { text: "Nombre", value: "Nombre", width: "30%" },
-        { text: "Descripcion", value: "Descripcion", width: "40%" },
-        //{ text: "Correo", value: "Correo", width: "40%" },
-        { text: "Acciones", value: "actions", width: "10%" },
-      ],
-      headers2: [
-        { text: "Nombre", value: "Nombre" },
-        { text: "Descripcion", value: "Descripcion" },
-        { text: "Vigencia", value: "Vigencia" },
-        { text: "Acciones", value: "actions" },
-      ],
-      options2: [
         {
-          name: "Ver",
-          icon: "mdi-eye",
-          function: this.showEditCategoria,
+          text: "N°",
+          sortable: false,
+          value: "index",
+          width: "10%",
+          class:'light blue darken-4 white--text'
         },
-        {
-          name: "Cambiar vigencia",
-          icon: "mdi-check-box-outline",
-          function: this.deleteCategoria,
-        },
+        { text: "Nombre", align: "start", value: "Nombre", width: "50%", class:'light blue darken-4 white--text' },
+        { text: "Descripcion", value: "Descripcion", width: "30%", class:'light blue darken-4 white--text' },
+        { text: "Acciones", value: "actions", width: "20%", class:'light blue darken-4 white--text' },
       ],
-      options: [
-        {
-          name: "Editar",
-          icon: "mdi-pencil",
-          function: this.showEditCategoria,
-        },
-        {
-          name: "Eliminar",
-          icon: "mdi-delete",
-          function: this.deleteCategoria,
-        },
-      ],
-      categorias: "",
+      categorias: [],
       search: "",
-      CodigoCategoria: "",
+      CodigoEmpresa: 0,
       Nombre: "",
       Descripcion: "",
+      valor: ""
     };
   },
   methods: {
+    fetchData() {
+      this.tableLoading = true;
+      get("categorias").then((data) => {
+        this.tableLoading = false;
+        this.categorias = data;
+      });
+    },
     validate() {
       this.$refs.form.validate();
     },
     limpiar() {
-      this.CodigoEmpresa = "";
+      this.CodigoEmpresa = 1;
       this.Nombre = "";
       this.Descripcion = "";
-      this.ver = false;
     },
     executeEventClick() {
       if (this.edit === false) {
@@ -215,34 +197,51 @@ export default {
       }
     },
     assembleCategoria() {
-      let form = new FormData();
-      form.append("CodigoEmpresa",1);
-      form.append("Nombre", this.Nombre);
-      form.append("Descripcion", this.Descripcion);
-      return form;
+       return {
+        CodigoEmpresa: 1,
+        Nombre: this.Nombre,
+        Descripcion: this.Descripcion        
+      }
     },
 
     registerCategoria() {
+      
       if (this.valid == false) return;
       this.saveLoading = true;
-      enviarConArchivos("categorias", this.assembleCategoria()).then(() => {
+      
+      post("categorias", this.assembleCategoria()).then(() => {
         this.saveLoading = false;
         this.dialogEjemplo = false;
-        this.$refs.categoriaTable.fetchData();
+        this.fetchData();
         this.limpiar();
+        Swal.fire({
+          title: "Sistema",
+          text: "Categoria registrada correctamente.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
         this.actualizarCategorias();
       });
     },
+
     editCategoria() {
       if (this.valid == false) return;
       this.saveLoading = true;
-      enviarConArchivos("categorias/" + this.editId, this.assembleCategoria())
+      put("categorias/" + this.editId, this.assembleCategoria())
         .then(() => {
           this.saveLoading = false;
           this.editId = null;
           this.dialogEjemplo = false;
-          this.$refs.categoriaTable.fetchData();
+          this.edit = false;
+          this.fetchData();
           this.limpiar();
+          Swal.fire({
+          title: "Sistema",
+          text: "Categoria actualizada correctamente.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+          this.actualizarEmpresas();
         })
         .catch(() => {
           this.alert = true;
@@ -255,26 +254,30 @@ export default {
         this.dialogEjemplo = true;
       });
     },
-    verCategoria(categoria) {
-      this.ver = true;
-      this.mostrarCategoria(categoria.Codigo).then(() => {
-        this.dialogEjemplo = true;
-      });
-    },
-    deleteCategoria(categoria) {
-      del("categoria/" + categoria.Codigo)
-        .then(() => {
-          this.$refs.categoriaTable.fetchData();
-          this.actualizarCategorias();
-        })
-        .catch(() => {
-          this.alert = true;
-        });
-    },
+
     cambiarEstadoCategoria(categoria) {
       patch("categoria/" + categoria.Codigo)
-        .then(() => {
-          this.$refs.categoriaTable.fetchData();
+        .then((data) => {
+          if(data.Vigencia == 1){
+          Swal.fire({
+            position: "top-center",
+            title: "Sistema",
+            text: "Categoria habilitada con éxito",
+            icon: "success",
+            confirmButtonText: "Ok",
+            timer: 2500,
+          });
+        }else{
+          Swal.fire({
+            position: "top-center",
+            title: "Sistema",
+            text: "Categoria dada de baja con éxito ",
+            icon: "success",
+            confirmButtonText: "Ok",
+            timer: 2500,
+          });
+        }
+          this.fetchData();
           this.actualizarCategorias();
         })
         .catch(() => {
@@ -282,22 +285,27 @@ export default {
         });
     },
     actualizarCategorias() {
-      get("tablaCategoria").then((data) => {
+      get("categorias").then((data) => {
         this.categorias = data;
       });
     },
     async mostrarCategoria(codigo) {
       const categoria = await get("categorias/" + codigo);
-      //this.CodigoEmpresa = 1;
+      this.CodigoEmpresa = 1;
       this.Nombre = categoria.Nombre;
       this.Descripcion = categoria.Descripcion;
     },
+
   },
   created() {
     this.actualizarCategorias();
+    this.fetchData();
   },
 };
 </script>
 
 <style>
+ tr.desactivo{
+    color: red;
+  }
 </style>
